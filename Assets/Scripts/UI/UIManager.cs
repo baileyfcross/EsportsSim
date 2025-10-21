@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using static Unity.Burst.Intrinsics.X86.Avx;
 
 public class CSUIManager : MonoBehaviour
 {
@@ -197,7 +196,8 @@ public class CSUIManager : MonoBehaviour
 
     public void SetupEventListeners()
     {
-        continueButton.onClick.AddListener(() => {
+        continueButton.onClick.AddListener(() =>
+        {
             CSTeamManager manager = UnityEngine.Object.FindFirstObjectByType<CSTeamManager>();
             manager.AdvanceDay();
             UpdateAllDisplays();
@@ -298,7 +298,7 @@ public class CSUIManager : MonoBehaviour
     public void AddKillfeedEntry(CSPlayer killer, CSPlayer victim, string weaponUsed)
     {
         // Add a kill to the killfeed UI
-        GameObject killfeedEntry = new GameObject("KillfeedEntry");
+        GameObject killfeedEntry = new("KillfeedEntry");
         killfeedEntry.transform.SetParent(killfeedPanel.transform, false);
 
         // Create killfeed text element

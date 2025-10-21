@@ -1,6 +1,6 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [System.Serializable]
 public class Country
@@ -8,7 +8,7 @@ public class Country
     public string name;
     public string code;
     public Sprite flag;
-    public List<TournamentOrganizer> tournaments = new List<TournamentOrganizer>();
+    public List<TournamentOrganizer> tournaments = new();
 }
 
 [System.Serializable]
@@ -16,7 +16,7 @@ public class TournamentOrganizer
 {
     public string name; // ESL, BLAST, PGL, etc.
     public int prestige; // 1-10, importance and reputation
-    public List<Tournament> tournaments = new List<Tournament>();
+    public List<Tournament> tournaments = new();
 }
 
 [System.Serializable]
@@ -26,10 +26,10 @@ public class Tournament
     public TournamentTier tier; // Major, S-Tier, A-Tier, etc.
     public TournamentOrganizer organizer;
     public int prizePool; // Total money
-    public List<CSTeam> invitedTeams = new List<CSTeam>();
-    public List<CSTeam> qualifiedTeams = new List<CSTeam>();
+    public List<CSTeam> invitedTeams = new();
+    public List<CSTeam> qualifiedTeams = new();
     public TournamentFormat format; // Swiss, Group Stage + Playoffs, Double Elim, etc.
-    public List<Map> mapPool = new List<Map>();
+    public List<Map> mapPool = new();
     public DateTime startDate;
     public DateTime endDate;
     public string location; // City and country
@@ -37,13 +37,13 @@ public class Tournament
 
     // Current tournament state
     public TournamentStage currentStage;
-    public List<CSMatch> scheduledMatches = new List<CSMatch>();
-    public List<CSMatch> completedMatches = new List<CSMatch>();
+    public List<CSMatch> scheduledMatches = new();
+    public List<CSMatch> completedMatches = new();
 
     // Tournament results
     public CSTeam champion;
     public CSTeam runnerUp;
-    public List<CSTeam> semifinals = new List<CSTeam>();
+    public List<CSTeam> semifinals = new();
 
     public void GenerateTournamentSchedule()
     {
@@ -59,7 +59,7 @@ public class Tournament
     // HLTV-style tournament points for team rankings
     public Dictionary<CSTeam, int> CalculateTeamPoints()
     {
-        Dictionary<CSTeam, int> points = new Dictionary<CSTeam, int>();
+        Dictionary<CSTeam, int> points = new();
         // Assign points based on placement and tournament tier
         return points;
     }
@@ -106,10 +106,10 @@ public class CSMatch
     public DateTime scheduledDate;
     public bool isCompleted;
     public CSTeam winner;
-    public List<CSMapResult> mapResults = new List<CSMapResult>();
+    public List<CSMapResult> mapResults = new();
 
     // The maps selected for this match
-    public List<Map> mapsToPlay = new List<Map>();
+    public List<Map> mapsToPlay = new();
 
     public void SimulateMatch()
     {
@@ -148,10 +148,10 @@ public class CSMapResult
     public int overtimeRounds;
 
     // Player performance on this map
-    public Dictionary<CSPlayer, PlayerMapStats> playerStats = new Dictionary<CSPlayer, PlayerMapStats>();
+    public Dictionary<CSPlayer, PlayerMapStats> playerStats = new();
 
     // Highlight moments
-    public List<HighlightMoment> highlights = new List<HighlightMoment>();
+    public List<HighlightMoment> highlights = new();
 }
 
 [System.Serializable]
@@ -201,12 +201,12 @@ public class CSTeam
     public int worldRanking;    // HLTV-style ranking
 
     // Team composition - standard 5-player roster + subs
-    public List<CSPlayer> activeRoster = new List<CSPlayer>();
-    public List<CSPlayer> benchPlayers = new List<CSPlayer>();
+    public List<CSPlayer> activeRoster = new();
+    public List<CSPlayer> benchPlayers = new();
     public CSCoach coach;
 
     // Team roles - which player plays what role
-    public Dictionary<PlayerRole, CSPlayer> roleAssignments = new Dictionary<PlayerRole, CSPlayer>();
+    public Dictionary<PlayerRole, CSPlayer> roleAssignments = new();
 
     // Team attributes
     public int reputation;
@@ -215,7 +215,7 @@ public class CSTeam
     public int facilities; // Training quality
 
     // Map pool strengths (0-100 rating per map)
-    public Dictionary<string, int> mapPoolStrength = new Dictionary<string, int>();
+    public Dictionary<string, int> mapPoolStrength = new();
 
     // Team playing style
     public float aggressionLevel;    // 0-100, passive to aggressive
@@ -225,7 +225,7 @@ public class CSTeam
     public float teamChemistry;        // Overall synergy rating
 
     // Recent results
-    public List<CSMatch> recentMatches = new List<CSMatch>();
+    public List<CSMatch> recentMatches = new();
 
     public float CalculateTeamStrength()
     {
@@ -260,15 +260,15 @@ public class CSCoach
 
 public class CSLeagueSystem : MonoBehaviour
 {
-    public List<Country> countries = new List<Country>();
-    public List<CSTeam> worldTeams = new List<CSTeam>();
-    public List<Map> activeMaps = new List<Map>();
-    public List<Tournament> upcomingTournaments = new List<Tournament>();
-    public List<Tournament> ongoingTournaments = new List<Tournament>();
-    public List<Tournament> completedTournaments = new List<Tournament>();
+    public List<Country> countries = new();
+    public List<CSTeam> worldTeams = new();
+    public List<Map> activeMaps = new();
+    public List<Tournament> upcomingTournaments = new();
+    public List<Tournament> ongoingTournaments = new();
+    public List<Tournament> completedTournaments = new();
 
     // World rankings (HLTV style)
-    public List<RankedTeam> worldRankings = new List<RankedTeam>();
+    public List<RankedTeam> worldRankings = new();
 
     public void InitializeCSLeagueSystem()
     {

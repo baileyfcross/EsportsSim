@@ -1,14 +1,14 @@
-using UnityEngine;
-using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 [System.Serializable]
-public class CSPlayer
+public class CSPlayer : MonoBehaviour
 {
     // Basic info
     public string firstName;
     public string lastName;
     public string nickName;
+    public string playerName;
     public int age;
     public string nationality;
     public Sprite playerPhoto;
@@ -23,6 +23,9 @@ public class CSPlayer
     public int mentalFortitude;    // Handling pressure/tilt
     public int gamesense;          // Reading the game state and opponents
     public int movementSkill;      // Strafing, counter-strafing, bhopping
+    public int reflexes;          // Overall reflex speed
+    public int gameIntelligence;   // Tactical understanding
+
 
     // Role-specific skills
     public int awpSkill;           // Sniper ability
@@ -32,15 +35,15 @@ public class CSPlayer
     public int siteAnchorAbility;  // Holding bombsites as CT
     public int entryFragging;      // First contact ability as T
     public int lurking;            // Flanking and timing
-
+ 
     // Map proficiencies (0-20 per map)
-    public Dictionary<string, int> mapProficiency = new Dictionary<string, int>();
+    public Dictionary<string, int> mapProficiency = new();
 
     // Career/Contract info
     public int salary;
     public int contractYearsRemaining;
     public int marketValue;
-    public List<string> previousTeams = new List<string>();
+    public List<string> previousTeams = new();
     public int yearsActive;
 
     // Personality traits
@@ -62,11 +65,12 @@ public class CSPlayer
     // Method to generate random CS player with realistic distributions
     public static CSPlayer GenerateRandomPlayer(string[] firstNames, string[] lastNames, string[] nationalities, string[] activeMaps)
     {
-        CSPlayer player = new CSPlayer();
+        CSPlayer player = new();
 
         // Generate basic info
         player.firstName = firstNames[UnityEngine.Random.Range(0, firstNames.Length)];
         player.lastName = lastNames[UnityEngine.Random.Range(0, lastNames.Length)];
+        player.playerName = $"{player.firstName} {player.lastName}";
         player.nickName = GenerateNickname(); // You'll implement this
         player.age = Mathf.FloorToInt(NormalDistribution(16, 35, 22, 4)); // CS players can start younger
         player.nationality = nationalities[UnityEngine.Random.Range(0, nationalities.Length)];
@@ -122,7 +126,7 @@ public class CSPlayer
     // Determine player's natural role based on stats
     private static PlayerRole DeterminePreferredRole(CSPlayer player)
     {
-        Dictionary<PlayerRole, float> roleScores = new Dictionary<PlayerRole, float>();
+        Dictionary<PlayerRole, float> roleScores = new();
 
         roleScores[PlayerRole.AWPer] = player.awpSkill * 1.5f + player.reactionTime * 0.8f + player.consistency * 0.7f;
         roleScores[PlayerRole.IGL] = player.leadershipAbility * 1.5f + player.gamesense * 1.2f + player.utilityUsage * 0.5f;

@@ -1,13 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
-using System;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using UnityEngine.SceneManagement;
-using Unity.VisualScripting;
 
-public class UISidebarMenu : MonoBehaviour {
+public class UISidebarMenu : MonoBehaviour
+{
 
     //Instance Variables
     [SerializeField] Button _selectedButton;
@@ -15,13 +10,15 @@ public class UISidebarMenu : MonoBehaviour {
     string[] bufferButtonName = null;
     string buttonName = null;
 
-    void Start() {
-        if (_selectedButton != null) {
+    void Start()
+    {
+        if (_selectedButton != null)
+        {
             buttonName = _selectedButton.ToString();
             bufferButtonName = buttonName.Split(' ');
             buttonName = bufferButtonName[0];
 
-            if (isDebugOn == true) 
+            if (isDebugOn == true)
             {
                 Debug.Log("Found Button Name");
             }
@@ -30,19 +27,22 @@ public class UISidebarMenu : MonoBehaviour {
 
         }
 
-        if (isDebugOn == true) {
+        if (isDebugOn == true)
+        {
             Debug.Log(buttonName);
             Debug.Log(_selectedButton);
         }
     }
 
-    public void LoadMainMenu() {
+    public void LoadMainMenu()
+    {
         ScenesManager.instance.LoadMainMenu();
     }
 
     public void LoadScene()
     {
-        if (isDebugOn == true) {
+        if (isDebugOn == true)
+        {
             Debug.Log("Loading Scene");
             Debug.Log(buttonName);
             Debug.Log("Loading Scene from found name in if statement");

@@ -87,7 +87,7 @@ public class CSTeamManager : MonoBehaviour
     public void ScheduleScrim(CSTeam opponent, DateTime date)
     {
         // Set up practice match against another team
-        CSMatch scrimMatch = new CSMatch
+        CSMatch scrimMatch = new()
         {
             teamA = managedTeam,
             teamB = opponent,
@@ -123,7 +123,7 @@ public class CSTeamManager : MonoBehaviour
     public PreMatchPlan CreateMatchPlan(CSMatch match)
     {
         // Prepare strategy for an upcoming match
-        PreMatchPlan plan = new PreMatchPlan
+        PreMatchPlan plan = new()
         {
             match = match
         };
@@ -329,8 +329,8 @@ public class CSStrat
     public Map map;
     public CSTeamSide side; // T or CT
     public string description;
-    public List<PlayerPosition> playerPositions = new List<PlayerPosition>();
-    public List<UtilityUsage> utilitySequence = new List<UtilityUsage>();
+    public List<PlayerPosition> playerPositions = new();
+    public List<UtilityUsage> utilitySequence = new();
     public int successRate; // Tracked success rate in matches
     public int timesUsed;
 }
@@ -373,8 +373,8 @@ public class CSDefaultSetup
 {
     public Map map;
     public CSTeamSide side;
-    public List<PlayerPosition> defaultPositions = new List<PlayerPosition>();
-    public List<string> responsibilities = new List<string>(); // What each player watches/controls
+    public List<PlayerPosition> defaultPositions = new();
+    public List<string> responsibilities = new(); // What each player watches/controls
 }
 
 [System.Serializable]
@@ -403,12 +403,12 @@ public class PreMatchPlan
     public CSMatch match;
 
     // Map veto strategy
-    public List<Map> mapsToVeto = new List<Map>();
-    public List<Map> mapPreferences = new List<Map>();
+    public List<Map> mapsToVeto = new();
+    public List<Map> mapPreferences = new();
 
     // Strat selection per map
-    public Dictionary<Map, List<CSStrat>> selectedStrats = new Dictionary<Map, List<CSStrat>>();
+    public Dictionary<Map, List<CSStrat>> selectedStrats = new();
 
     // Focus on specific opponents
-    public List<CSPlayer> targetPlayers = new List<CSPlayer>();
+    public List<CSPlayer> targetPlayers = new();
 }

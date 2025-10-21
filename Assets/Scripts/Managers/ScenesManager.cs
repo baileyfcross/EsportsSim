@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,12 +6,13 @@ public class ScenesManager : MonoBehaviour
 {
     public static ScenesManager instance;
 
-    private void Awake() {
-        instance = this; 
+    private void Awake()
+    {
+        instance = this;
     }
 
-    public enum Scene 
-    { 
+    public enum Scene
+    {
         MainMenu,
         Profile,
         Roster,
@@ -27,7 +26,7 @@ public class ScenesManager : MonoBehaviour
 
     }
 
-    public void LoadScene(Scene scene) 
+    public void LoadScene(Scene scene)
     {
         SceneManager.LoadScene(scene.ToString());
     }
@@ -38,12 +37,12 @@ public class ScenesManager : MonoBehaviour
         SceneManager.LoadScene(foundSceneIndex);
     }
 
-    public void LoadNewGame() 
+    public void LoadNewGame()
     {
         SceneManager.LoadScene(Scene.Profile.ToString());
     }
 
-    public void LoadNextScene() 
+    public void LoadNextScene()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }

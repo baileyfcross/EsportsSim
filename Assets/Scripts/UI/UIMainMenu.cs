@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +17,7 @@ public class UIMainMenu : MonoBehaviour
     }
 
     private void StartGame()
-    {   
+    {
         if (isDebugOn == true)
         {
             Debug.Log("Entering StartGame from listener");
