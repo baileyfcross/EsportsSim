@@ -2,68 +2,143 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+public class CSLeagueSystem : MonoBehaviour
+{
+    public List<TournamentOrganizer> organizers = new();
+    public List<Tournament> allTournaments = new();
+
+    private Dictionary<string, TournamentOrganizer> organizerMap = new();
+
+    private void Start()
+    {
+        InitializeOrganizers();
+    }
+
+    private void InitializeOrganizers()
+    {
+        // Setup tournament organizers
+        organizers.Add(new TournamentOrganizer { name = "ESL", prestige = 9 });
+        organizers.Add(new TournamentOrganizer { name = "BLAST", prestige = 9 });
+        organizers.Add(new TournamentOrganizer { name = "PGL", prestige = 8 });
+
+        foreach (var org in organizers)
+        {
+            organizerMap[org.name] = org;
+        }
+    }
+
+    public void CreateTournament(string name, TournamentTier tier, string organizerName,
+        int prizePool, TournamentFormat format, DateTime startDate, DateTime endDate)
+    {
+        Tournament tournament = new Tournament
+        {
+            name = name,
+            tier = tier,
+            organizerName = organizerName,
+            prizePool = prizePool,
+            format = format,
+            startDate = startDate,
+            endDate = endDate,
+            currentStage = TournamentStage.NotStarted
+        };
+
+        allTournaments.Add(tournament);
+
+        if (organizerMap.ContainsKey(organizerName))
+        {
+            organizerMap[organizerName].AddTournament(tournament);
+        }
+
+        Debug.Log($"Tournament created: {name} by {organizerName}");
+    }
+
+    public TournamentOrganizer GetOrganizer(string name)
+    {
+        return organizerMap.ContainsKey(name) ? organizerMap[name] : null;
+    }
+}
+
+
+
 [System.Serializable]
 public class TournamentOrganizer
 {
-    public string name; // ESL, BLAST, PGL, etc.
-    public int prestige; // 1-10, importance and reputation
-    public List<Tournament> tournaments = new();
+    public string name;
+    public int prestige;
+
+    [SerializeField]
+    private List<string> tournamentIds = new(); // Store GUIDs instead
+
+    public void AddTournament(Tournament tournament)
+    {
+        if (!tournamentIds.Contains(tournament.TournamentId))
+            tournamentIds.Add(tournament.TournamentId);
+    }
 }
 
 [System.Serializable]
 public class Tournament
 {
-    public string name; // "ESL Pro League Season 20", "BLAST Premier Spring Finals"
-    public TournamentTier tier; // Major, S-Tier, A-Tier, etc.
-    public TournamentOrganizer organizer;
-    public int prizePool; // Total money
+    public string name; // "ESL Pro League Season 20"
+    public TournamentTier tier;
+
+    // SOLUTION 1: Use only the organizer's NAME/ID, not the full reference
+    public string organizerName; // Store name instead of full object reference
+
+    // SOLUTION 2: Use [SerializeReference] for polymorphic serialization
+    // This avoids circular dependencies
+    // public TournamentOrganizer organizer; // REMOVE THIS
+
+    public int prizePool;
     public List<CSTeam> invitedTeams = new();
     public List<CSTeam> qualifiedTeams = new();
-    public TournamentFormat format; // Swiss, Group Stage + Playoffs, Double Elim, etc.
+    public TournamentFormat format;
     public List<Map> mapPool = new();
     public DateTime startDate;
     public DateTime endDate;
-    public string location; // City and country
-    public bool isLAN; // LAN or online
+    public string location;
+    public bool isLAN;
 
-    // Current tournament state
     public TournamentStage currentStage;
     public List<CSMatch> scheduledMatches = new();
     public List<CSMatch> completedMatches = new();
 
-    // Tournament results
     public CSTeam champion;
     public CSTeam runnerUp;
     public List<CSTeam> semifinals = new();
 
+    [SerializeField]
+    private string tournamentId; // Unique GUID
+
+    public string TournamentId => tournamentId;
+    public Tournament()
+    {
+        tournamentId = System.Guid.NewGuid().ToString();
+    }
     public void GenerateTournamentSchedule()
     {
-        // Create match schedule based on format
-        // E.g., GSL groups, Swiss system, single/double elimination brackets
+        // TODO Implementation
     }
 
     public void AdvanceTournament()
     {
-        // Move to next stage as matches complete
+        // TODO Implementation
     }
 
-    // HLTV-style tournament points for team rankings
     public Dictionary<CSTeam, int> CalculateTeamPoints()
     {
-        Dictionary<CSTeam, int> points = new();
-        // Assign points based on placement and tournament tier
-        return points;
+        return new Dictionary<CSTeam, int>();
     }
 }
 
 [System.Serializable]
 public enum TournamentTier
 {
-    Major,      // Valve Majors
-    STier,      // Big events like ESL Pro League, BLAST Premier
-    ATier,      // Mid-sized international events
-    BTier,      // Smaller regional events
-    CTier       // Qualifiers and local tournaments
+    Major,
+    STier,
+    ATier,
+    BTier,
+    CTier
 }
 
 [System.Serializable]
@@ -93,178 +168,71 @@ public class CSMatch
 {
     public CSTeam teamA;
     public CSTeam teamB;
-    public MatchFormat format; // BO1, BO3, BO5
     public DateTime scheduledDate;
     public bool isCompleted;
-    public CSTeam winner;
     public List<CSMapResult> mapResults = new();
-
-    // The maps selected for this match
-    public List<Map> mapsToPlay = new();
-
-    public void SimulateMatch()
-    {
-        // Complex algorithm to simulate CS match including map picks and bans
-        // Consider team map pool strengths, individual player performances
-        // Include in-game economy, pistol rounds, clutch situations, etc.
-    }
-
-    public void SimulateMapVeto()
-    {
-        // Implement the CS map veto process
-        // Team A bans map, Team B bans map, Team A picks map 1, etc.
-    }
+    public MatchFormat format;
 }
 
 [System.Serializable]
 public enum MatchFormat
 {
-    BO1,    // Best of 1
-    BO3,    // Best of 3
-    BO5     // Best of 5
+    BO1,
+    BO3,
+    BO5
 }
 
 [System.Serializable]
 public class CSMapResult
 {
     public Map map;
-    public int teamAScore;     // T rounds + CT rounds
+    public int teamAScore;
     public int teamBScore;
-    public int teamAT_Score;   // T side rounds
-    public int teamACT_Score;  // CT side rounds  
+    public int teamAT_Score;
+    public int teamACT_Score;
     public int teamBT_Score;
     public int teamBCT_Score;
     public CSTeam winner;
     public bool overtimePlayed;
     public int overtimeRounds;
 
-    // Player performance on this map
     public Dictionary<CSPlayer, PlayerMapStats> playerStats = new();
-
-    // Highlight moments
     public List<HighlightMoment> highlights = new();
 }
 
 [System.Serializable]
 public class PlayerMapStats
 {
+    public CSPlayer player;
     public int kills;
     public int deaths;
-    public int assists;
-    public int headshots;
-    public float adr;         // Average damage per round
-    public float kast;        // Kill, Assist, Survived, Traded %
-    public int clutchesWon;
-    public int clutchesLost;
-    public int entryKills;
-    public int entryDeaths;
-    public int multiKillRounds; // 2k, 3k, etc.
-    public float impact;      // Impact rating
-    public float rating;      // HLTV-style rating
+    public float rating;
 }
 
 [System.Serializable]
 public class HighlightMoment
 {
-    public CSPlayer player;
-    public HighlightType type; // Ace, clutch, etc.
     public int roundNumber;
+    public HighlightType type;
     public string description;
+    public float timestamp;
 }
 
 public enum HighlightType
 {
-    Ace,            // 5 kills in a round
-    Clutch1v3Plus,  // Winning 1v3, 1v4, or 1v5
-    FourK,          // 4 kills in a round
-    NinjaDefuse,    // Stealthy defuse
-    CollateralAWP,  // Multiple kills with one AWP shot
-    PistolAce       // Ace on pistol round
-}
-
-public class CSLeagueSystem : MonoBehaviour
-{
-    public List<Country> countries = new();
-    public List<CSTeam> worldTeams = new();
-    public List<Map> activeMaps = new();
-    public List<Tournament> upcomingTournaments = new();
-    public List<Tournament> ongoingTournaments = new();
-    public List<Tournament> completedTournaments = new();
-
-    // World rankings (HLTV style)
-    public List<RankedTeam> worldRankings = new();
-
-    public void InitializeCSLeagueSystem()
-    {
-        GenerateTeams();
-        SetupActiveMaps();
-        GenerateTournamentCalendar();
-        CalculateInitialRankings();
-    }
-
-    private void CalculateInitialRankings()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void GenerateTournamentCalendar()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void SetupActiveMaps()
-    {
-        throw new NotImplementedException();
-    }
-
-    private void GenerateTeams()
-    {
-        throw new NotImplementedException();
-    }
-
-    public void AdvanceDay(DateTime currentDate)
-    {
-        // Process matches scheduled for this day
-        SimulateTodaysMatches(currentDate);
-
-        // Check if tournaments completed
-        CheckTournamentCompletions();
-
-        // Update world rankings if necessary (typically happens weekly)
-        if (ShouldUpdateRankings(currentDate))
-        {
-            UpdateWorldRankings();
-        }
-    }
-
-    private void SimulateTodaysMatches(DateTime currentDate)
-    {
-        // Find and simulate all matches scheduled for today
-    }
-
-    private void CheckTournamentCompletions()
-    {
-        // Move completed tournaments from ongoing to completed
-    }
-
-    private bool ShouldUpdateRankings(DateTime currentDate)
-    {
-        // Logic to determine if rankings should update (e.g., every Monday)
-        return false; // Placeholder
-    }
-
-    private void UpdateWorldRankings()
-    {
-        // Implement HLTV-style ranking algorithm
-        // Based on tournament results, placements, and opponent strength
-    }
+    Ace,
+    Clutch,
+    DoubleKill,
+    Headshot,
+    PlantBomb,
+    DefuseBomb
 }
 
 [System.Serializable]
 public class RankedTeam
 {
     public CSTeam team;
-    public int position;
+    public int rank;
     public int points;
-    public int changeInRank; // +/- from previous week
+    public int change; // Movement from previous rank
 }

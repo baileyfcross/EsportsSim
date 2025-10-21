@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using static ContractSystem;
 using Object = UnityEngine.Object;
 
@@ -60,10 +61,10 @@ public class UIManager : MonoBehaviour
     public GameObject itemPrefab;
 
     [Header("Global UI Elements")]
-    public Text currentDateText;
-    public Text teamBudgetText;
-    public Text upcomingMatchText;
-    public Text worldRankingText;
+    public TextMeshProUGUI currentDateText;
+    public TextMeshProUGUI teamBudgetText;
+    public TextMeshProUGUI upcomingMatchText;
+    public TextMeshProUGUI worldRankingText;
 
     [Header("CS-Specific UI")]
     public GameObject mapSelectionPanel;
@@ -556,7 +557,8 @@ public class UIManager : MonoBehaviour
         matchSimulationPanel.SetActive(true);
 
         UpdateScoreDisplay(0, 0);
-        UpdateMinimapDisplay(match.mapsToPlay[0]);
+        //TODO Fix minimap display
+        //UpdateMinimapDisplay(match.mapsToPlay[0]);
         ShowPlayerPositionsOnMap(match);
     }
 

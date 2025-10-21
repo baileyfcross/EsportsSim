@@ -77,7 +77,8 @@ public class ContractSystem : MonoBehaviour
     private Dictionary<CSTeam, TeamBudget> teamBudgets = new();
     private Dictionary<CSPlayer, PlayerContract> playerContracts = new();
 
-    private float monthlyExpenses = 0f;
+    //TODO add monthly expenses tracking
+    //private float monthlyExpenses = 0f;
 
     public void InitializeBudget(CSTeam team, float initialBudget)
     {
