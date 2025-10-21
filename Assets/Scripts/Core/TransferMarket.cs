@@ -13,7 +13,7 @@ public class TransferMarket : MonoBehaviour
     public class TransferListing
     {
         public CSPlayer player;
-        public Team currentTeam;
+        public CSTeam currentTeam;
         public float askingPrice;
         public TransferStatus status;
         public DateTime listingDate;
@@ -35,7 +35,7 @@ public class TransferMarket : MonoBehaviour
     [System.Serializable]
     public class TransferOffer
     {
-        public Team biddingTeam;
+        public CSTeam biddingTeam;
         public float offerAmount;
         public DateTime offerDate;
         public OfferStatus status;
@@ -59,7 +59,7 @@ public class TransferMarket : MonoBehaviour
         }
     }
 
-    public void ListPlayerForTransfer(CSPlayer player, Team currentTeam, float askingPrice,
+    public void ListPlayerForTransfer(CSPlayer player, CSTeam currentTeam, float askingPrice,
         int listingDaysRemaining = 30)
     {
         if (activeListings.ContainsKey(player))
@@ -77,7 +77,7 @@ public class TransferMarket : MonoBehaviour
             listingDate = DateTime.Now,
             deadline = DateTime.Now.AddDays(listingDaysRemaining),
             offers = new List<TransferOffer>(),
-            description = $"{player.playerName} - Listed by {currentTeam.teamName}"
+            description = $"{player.playerName} - Listed by {currentTeam.name}"
         };
 
         activeListings[player] = listing;
@@ -94,7 +94,7 @@ public class TransferMarket : MonoBehaviour
         }
     }
 
-    public bool PlaceTransferOffer(CSPlayer player, Team biddingTeam, float offerAmount,
+    public bool PlaceTransferOffer(CSPlayer player, CSTeam biddingTeam, float offerAmount,
         int contractLengthMonths, float proposedMonthlySalary)
     {
         if (!activeListings.ContainsKey(player))
@@ -115,7 +115,7 @@ public class TransferMarket : MonoBehaviour
         float totalCost = offerAmount + (proposedMonthlySalary * contractLengthMonths);
         if (contractSystem.GetTeamAvailableBudget(biddingTeam) < totalCost)
         {
-            Debug.LogWarning($"Team {biddingTeam.teamName} does not have sufficient budget");
+            Debug.LogWarning($"Team {biddingTeam.name} does not have sufficient budget");
             return false;
         }
 
@@ -130,7 +130,7 @@ public class TransferMarket : MonoBehaviour
         };
 
         listing.offers.Add(offer);
-        Debug.Log($"Transfer offer placed: {biddingTeam.teamName} offers ${offerAmount} for {player.playerName}");
+        Debug.Log($"Transfer offer placed: {biddingTeam.name} offers ${offerAmount} for {player.playerName}");
 
         return true;
     }
@@ -144,8 +144,8 @@ public class TransferMarket : MonoBehaviour
         }
 
         TransferListing listing = activeListings[player];
-        Team newTeam = offer.biddingTeam;
-        Team oldTeam = listing.currentTeam;
+        CSTeam newTeam = offer.biddingTeam;
+        CSTeam oldTeam = listing.currentTeam;
 
         // Process the transfer
         if (contractSystem != null)
@@ -173,14 +173,14 @@ public class TransferMarket : MonoBehaviour
         offer.status = OfferStatus.Accepted;
 
         // Move player to new team
-        oldTeam.roster.Remove(player);
-        newTeam.roster.Add(player);
+        oldTeam.RemovePlayerFromRoster(player);
+        newTeam.AddPlayerToRoster(player);
 
         // Archive transfer
         transferHistory.Add(listing);
         activeListings.Remove(player);
 
-        Debug.Log($"Transfer complete: {player.playerName} transferred from {oldTeam.teamName} to {newTeam.teamName} for ${offer.offerAmount}");
+        Debug.Log($"Transfer complete: {player.playerName} transferred from {oldTeam.name} to {newTeam.name} for ${offer.offerAmount}");
 
         return true;
     }
@@ -201,7 +201,7 @@ public class TransferMarket : MonoBehaviour
         return activeListings.ContainsKey(player) ? activeListings[player] : null;
     }
 
-    public List<TransferListing> GetTeamTransfers(Team team)
+    public List<TransferListing> GetTeamTransfers(CSTeam team)
     {
         List<TransferListing> teamTransfers = new();
         foreach (var kvp in activeListings)
@@ -234,7 +234,7 @@ public class TransferMarket : MonoBehaviour
         }
     }
 
-    public float CalculatePlayerValue(CSPlayer player, Team currentTeam = null)
+    public float CalculatePlayerValue(CSPlayer player, CSTeam currentTeam = null)
     {
         // Base value calculation based on player attributes
         float baseSkill = (player.aim + player.gameIntelligence + player.consistency +

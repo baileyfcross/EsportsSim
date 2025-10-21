@@ -6,33 +6,34 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/Main Menu/MainMenu.unity
+    path: Assets/Scenes/MainMenu.unity
     guid: 33f20252a14bf114d93e2221a9cf4b53
   - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Profile.unity
+    path: Assets/Scenes/MainUI.unity
     guid: 2cda990e2423bbf4892e6590ba056729
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Roster.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Roster.unity
     guid: ed7564d80c017e04c8f4fc107a7d38cd
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Tactics.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Tactics.unity
     guid: 9ce1daf5f161d3a419233f1925da1c91
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Development.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Development.unity
     guid: 36ed900d0ada87c489beae9853f932ce
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Scouting.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Scouting.unity
     guid: 49b4c5ca371577d47b3d3fe70bb8fc90
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Finances.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Finances.unity
     guid: c22da761d95624f4080833696d641978
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/Schedule.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/Schedule.unity
     guid: e19bf9a847c439546908f86c71532680
-  - enabled: 1
-    path: Assets/Scenes/Sidebar Scenes/JobCenter.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Sidebar Scenes/JobCenter.unity
     guid: 886b1acab6174cc428e4a3514a7501ee
-  - enabled: 1
-    path: Assets/Scenes/Main Menu/Settings.unity
+  - enabled: 0
+    path: Assets/Scenes/Archive/Settings.unity
     guid: d8017db8d883e074cbe1030c83d4e582
   m_configObjects: {}
+  m_UseUCBPForAssetBundles: 0

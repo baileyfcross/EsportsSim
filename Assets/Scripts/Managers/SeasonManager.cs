@@ -21,7 +21,7 @@ public class SeasonManager : MonoBehaviour
         public SeasonPhase currentPhase;
         public int daysPassed;
         public float gameSpeedMultiplier;
-        public List<Team> participatingTeams;
+        public List<CSTeam> participatingTeams;
         public Tournament mainTournament;
         public List<Tournament> regionalTournaments;
     }
@@ -33,8 +33,8 @@ public class SeasonManager : MonoBehaviour
         public TournamentType type;
         public DateTime startDate;
         public DateTime endDate;
-        public List<Team> participatingTeams;
-        public Team winner;
+        public List<CSTeam> participatingTeams;
+        public CSTeam winner;
         public float prizePool;
         public List<MatchResult> matches;
         public TournamentStatus status;
@@ -60,7 +60,7 @@ public class SeasonManager : MonoBehaviour
         saveFilePath = Application.persistentDataPath + "/esports_sim_save.json";
     }
 
-    public void StartNewSeason(int seasonNumber, int year, List<Team> teams)
+    public void StartNewSeason(int seasonNumber, int year, List<CSTeam> teams)
     {
         currentSeason = new SeasonData
         {
@@ -170,7 +170,7 @@ public class SeasonManager : MonoBehaviour
     {
         if (currentSeason.participatingTeams.Count == 0) return;
 
-        Team randomTeam = currentSeason.participatingTeams[Random.Range(0, currentSeason.participatingTeams.Count)];
+        CSTeam randomTeam = currentSeason.participatingTeams[Random.Range(0, currentSeason.participatingTeams.Count)];
         List<CSPlayer> roster = randomTeam.GetActiveRoster();
 
         if (roster.Count == 0) return;

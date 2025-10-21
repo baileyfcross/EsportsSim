@@ -1,40 +1,75 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using static ContractSystem;
+using Object = UnityEngine.Object;
 
-public class CSUIManager : MonoBehaviour
+/// <summary>
+/// Centralized UI Manager for all pages and displays
+/// Integrates core game systems with UI display
+/// </summary>
+public class UIManager : MonoBehaviour
 {
-    [Header("Main Screen References")]
-    public GameObject mainMenuPanel;
+    public enum UIPage
+    {
+        Dashboard,
+        TeamManagement,
+        Contracts,
+        TransferMarket,
+        MatchResults,
+        SeasonCalendar,
+        PlayerDevelopment,
+        Strategy,
+        WorldRankings,
+        Tournament
+    }
+
+    [Header("Main Screen Panels")]
+    public GameObject dashboardPanel;
     public GameObject teamManagementPanel;
-    public GameObject tournamentPanel;
-    public GameObject matchDayPanel;
-    public GameObject playerScoutingPanel;
-    public GameObject transferNegotiationPanel;
+    public GameObject contractsPanel;
+    public GameObject transferMarketPanel;
+    public GameObject matchResultsPanel;
+    public GameObject seasonCalendarPanel;
+    public GameObject playerDevelopmentPanel;
     public GameObject strategyPanel;
+    public GameObject worldRankingsPanel;
+    public GameObject tournamentPanel;
+
+    [Header("Navigation Buttons")]
+    public Button dashboardButton;
+    public Button teamButton;
+    public Button contractsButton;
+    public Button transferButton;
+    public Button matchesButton;
+    public Button seasonButton;
+    public Button playersButton;
+    public Button strategyButton;
+    public Button rankingsButton;
+    public Button saveButton;
+    public Button loadButton;
+    public Button continueButton; // Advance to next day
 
     [Header("Player Information")]
     public GameObject playerProfilePrefab;
     public Transform playerListContainer;
+
+    [Header("Shared Data Container")]
+    public Transform dataContainer;
+    public GameObject itemPrefab;
+
+    [Header("Global UI Elements")]
+    public Text currentDateText;
+    public Text teamBudgetText;
+    public Text upcomingMatchText;
+    public Text worldRankingText;
 
     [Header("CS-Specific UI")]
     public GameObject mapSelectionPanel;
     public GameObject stratCreatorPanel;
     public GameObject matchHistoryPanel;
     public GameObject tournamentBracketPanel;
-    public GameObject worldRankingsPanel;
-
-    [Header("Navigation")]
-    public Button continueButton; // Advance to next day
-
-    // References to specific UI elements
-    public Text currentDateText;
-    public Text teamBudgetText;
-    public Text upcomingMatchText;
-    public Text worldRankingText;
-
-    // CS HUD elements for match simulation
     public GameObject matchSimulationPanel;
     public Image minimapImage;
     public Text roundTimerText;
@@ -42,18 +77,313 @@ public class CSUIManager : MonoBehaviour
     public Text economyText;
     public GameObject killfeedPanel;
 
-    // Manager for tab-based navigation (like in FM)
+    [Header("Match Display")]
+    public Text matchTitleText;
+    public Text matchDateText;
+    public Text mapNameText;
+    public Text teamANameText;
+    public Text teamBNameText;
+    public Text teamAScoreText;
+    public Text teamBScoreText;
+
+    [Header("Contract Display")]
+    public Text totalBudgetText;
+    public Text spentOnSalariesText;
+    public Text availableBudgetText;
+    public Image budgetProgressBar;
+
+    // Manager for tab-based navigation
     public TabNavigationManager tabManager;
+
+    // Core system references
+    private MatchSimulationManager matchSimulation;
+    private ContractSystem contractSystem;
+    private TransferMarket transferMarket;
+    private SeasonManager seasonManager;
+    private PlayerDevelopment playerDevelopment;
+    private CSTeamManager teamManager;
+
+    private UIPage currentPage = UIPage.Dashboard;
+    private Dictionary<UIPage, GameObject> pageMap;
 
     private void Start()
     {
-        SetupEventListeners();
+        InitializeReferences();
+        SetupPageMap();
+        SetupNavigationButtons();
         UpdateAllDisplays();
+        ShowPage(UIPage.Dashboard);
     }
+
+    private void InitializeReferences()
+    {
+        matchSimulation = Object.FindFirstObjectByType<MatchSimulationManager>();
+        contractSystem = Object.FindFirstObjectByType<ContractSystem>();
+        transferMarket = Object.FindFirstObjectByType<TransferMarket>();
+        seasonManager = Object.FindFirstObjectByType<SeasonManager>();
+        playerDevelopment = Object.FindFirstObjectByType<PlayerDevelopment>();
+        teamManager = Object.FindFirstObjectByType<CSTeamManager>();
+    }
+
+    private void SetupPageMap()
+    {
+        pageMap = new Dictionary<UIPage, GameObject>
+        {
+            { UIPage.Dashboard, dashboardPanel },
+            { UIPage.TeamManagement, teamManagementPanel },
+            { UIPage.Contracts, contractsPanel },
+            { UIPage.TransferMarket, transferMarketPanel },
+            { UIPage.MatchResults, matchResultsPanel },
+            { UIPage.SeasonCalendar, seasonCalendarPanel },
+            { UIPage.PlayerDevelopment, playerDevelopmentPanel },
+            { UIPage.Strategy, strategyPanel },
+            { UIPage.WorldRankings, worldRankingsPanel },
+            { UIPage.Tournament, tournamentPanel }
+        };
+    }
+
+    private void SetupNavigationButtons()
+    {
+        dashboardButton.onClick.AddListener(() => ShowPage(UIPage.Dashboard));
+        teamButton.onClick.AddListener(() => ShowPage(UIPage.TeamManagement));
+        contractsButton.onClick.AddListener(() => ShowPage(UIPage.Contracts));
+        transferButton.onClick.AddListener(() => ShowPage(UIPage.TransferMarket));
+        matchesButton.onClick.AddListener(() => ShowPage(UIPage.MatchResults));
+        seasonButton.onClick.AddListener(() => ShowPage(UIPage.SeasonCalendar));
+        playersButton.onClick.AddListener(() => ShowPage(UIPage.PlayerDevelopment));
+        strategyButton.onClick.AddListener(() => ShowPage(UIPage.Strategy));
+        rankingsButton.onClick.AddListener(() => ShowPage(UIPage.WorldRankings));
+
+        saveButton.onClick.AddListener(() => SaveGame());
+        loadButton.onClick.AddListener(() => LoadGame());
+
+        continueButton.onClick.AddListener(() => AdvanceDay());
+    }
+
+    public void ShowPage(UIPage page)
+    {
+        // Hide all pages first
+        foreach (var panelEntry in pageMap)
+        {
+            if (panelEntry.Value != null)
+                panelEntry.Value.SetActive(false);
+        }
+
+        // Show selected page
+        if (pageMap.ContainsKey(page) && pageMap[page] != null)
+        {
+            pageMap[page].SetActive(true);
+            currentPage = page;
+
+            // Load page-specific data
+            LoadPageData(page);
+        }
+    }
+
+    private void LoadPageData(UIPage page)
+    {
+        switch (page)
+        {
+            case UIPage.Dashboard:
+                DisplayDashboard();
+                break;
+            case UIPage.TeamManagement:
+                DisplayTeamManagement();
+                break;
+            case UIPage.Contracts:
+                DisplayContracts();
+                break;
+            case UIPage.TransferMarket:
+                DisplayTransferMarket();
+                break;
+            case UIPage.MatchResults:
+                DisplayMatchResults();
+                break;
+            case UIPage.SeasonCalendar:
+                DisplaySeasonCalendar();
+                break;
+            case UIPage.PlayerDevelopment:
+                DisplayPlayerDevelopment();
+                break;
+            case UIPage.Strategy:
+                DisplayStrategy();
+                break;
+            case UIPage.WorldRankings:
+                DisplayWorldRankings();
+                break;
+            case UIPage.Tournament:
+                DisplayTournament();
+                break;
+        }
+    }
+
+    // PAGE-SPECIFIC DISPLAY METHODS
+
+    private void DisplayDashboard()
+    {
+        ClearContainer(dataContainer);
+
+        if (seasonManager?.GetCurrentSeason() == null)
+            return;
+
+        SeasonManager.SeasonData season = seasonManager.GetCurrentSeason();
+
+        // Display season info
+        CreateInfoPanel("Season Information",
+            $"Season {season.seasonNumber} - {season.year}\n" +
+            $"Phase: {season.currentPhase}\n" +
+            $"Days Passed: {season.daysPassed}\n" +
+            $"Date: {season.seasonStart.AddDays(season.daysPassed):dd MMM yyyy}");
+
+        // Display upcoming matches
+        CreateInfoPanel("Upcoming Matches", "Load from tournament system");
+
+        // Display team summary
+        if (teamManager != null)
+        {
+            CreateInfoPanel("Team Status",
+                $"Team: {teamManager.managedTeam.name}\n" +
+                $"Rank: #{teamManager.managedTeam.worldRanking}\n" +
+                $"Budget: ${teamManager.budget:N0}");
+        }
+    }
+
+    private void DisplayTeamManagement()
+    {
+        ClearContainer(playerListContainer);
+
+        if (teamManager?.managedTeam == null)
+            return;
+
+        List<CSPlayer> roster = teamManager.managedTeam.GetActiveRoster();
+
+        foreach (var player in roster)
+        {
+            ShowPlayerProfile(player);
+        }
+    }
+
+    private void DisplayContracts()
+    {
+        ClearContainer(dataContainer);
+
+        if (contractSystem == null || teamManager?.managedTeam == null)
+            return;
+
+        ContractSystem.TeamBudget budget = contractSystem.GetTeamBudget(teamManager.managedTeam);
+
+        if (budget != null)
+        {
+            // Display budget overview
+            totalBudgetText.text = "$" + budget.totalBudget.ToString("N0");
+            spentOnSalariesText.text = "$" + budget.spentOnSalaries.ToString("N0");
+            availableBudgetText.text = "$" + budget.GetAvailableBudget().ToString("N0");
+
+            // Update budget progress bar
+            float spentPercentage = budget.spentOnSalaries / budget.totalBudget;
+            budgetProgressBar.fillAmount = Mathf.Clamp01(spentPercentage);
+
+            if (spentPercentage > 0.9f)
+                budgetProgressBar.color = Color.red;
+            else if (spentPercentage > 0.7f)
+                budgetProgressBar.color = Color.yellow;
+            else
+                budgetProgressBar.color = Color.green;
+        }
+
+        // Display contracts
+        List<PlayerContract> contracts = contractSystem.GetTeamContracts(teamManager.managedTeam);
+        foreach (var contract in contracts)
+        {
+            DisplayContractEntry(contract);
+        }
+    }
+
+    private void DisplayTransferMarket()
+    {
+        ClearContainer(dataContainer);
+
+        if (transferMarket == null)
+            return;
+
+        transferMarket.CheckExpiredListings();
+        List<TransferMarket.TransferListing> listings = transferMarket.GetActiveListings();
+
+        foreach (var listing in listings)
+        {
+            DisplayTransferListing(listing);
+        }
+    }
+
+    private void DisplayMatchResults()
+    {
+        ClearContainer(dataContainer);
+        CreateInfoPanel("Match Results", "Display recent match outcomes and statistics");
+    }
+
+    private void DisplaySeasonCalendar()
+    {
+        ClearContainer(dataContainer);
+
+        if (seasonManager?.GetCurrentSeason() == null)
+            return;
+
+        SeasonManager.SeasonData season = seasonManager.GetCurrentSeason();
+
+        float progressPercent = (float)season.daysPassed / (float)(season.seasonEnd - season.seasonStart).TotalDays;
+
+        CreateInfoPanel("Season Calendar",
+            $"Phase: {season.currentPhase}\n" +
+            $"Progress: {(progressPercent * 100):F0}%\n" +
+            $"Days Passed: {season.daysPassed}\n" +
+            $"Start: {season.seasonStart:dd MMM yyyy}\n" +
+            $"End: {season.seasonEnd:dd MMM yyyy}");
+    }
+
+    private void DisplayPlayerDevelopment()
+    {
+        ClearContainer(playerListContainer);
+
+        if (teamManager?.managedTeam == null || playerDevelopment == null)
+            return;
+
+        List<CSPlayer> roster = teamManager.managedTeam.GetActiveRoster();
+
+        foreach (var player in roster)
+        {
+            PlayerDevelopment.PlayerStats stats = playerDevelopment.GetPlayerStats(player);
+            if (stats != null)
+            {
+                DisplayPlayerStatsEntry(player, stats);
+            }
+        }
+    }
+
+    private void DisplayStrategy()
+    {
+        ClearContainer(dataContainer);
+        CreateInfoPanel("Strategy Creator", "Map-based strategy and positioning system");
+    }
+
+    private void DisplayWorldRankings()
+    {
+        ClearContainer(dataContainer);
+        CreateInfoPanel("World Rankings", "Global team rankings and statistics");
+    }
+
+    private void DisplayTournament()
+    {
+        if (seasonManager?.GetCurrentSeason()?.mainTournament != null)
+        {
+            SeasonManager.Tournament tournament = seasonManager.GetCurrentSeason().mainTournament;
+            ShowTournamentBracket(tournament);
+        }
+    }
+
+    // HELPER DISPLAY METHODS
 
     public void ShowPlayerProfile(CSPlayer player)
     {
-        // Instantiate and populate CS player profile with data
         GameObject profile = Instantiate(playerProfilePrefab, playerListContainer);
         CSPlayerProfileUI profileUI = profile.GetComponent<CSPlayerProfileUI>();
         profileUI.PopulateProfile(player);
@@ -61,7 +391,6 @@ public class CSUIManager : MonoBehaviour
 
     public void UpdateTeamRoster(List<CSPlayer> players)
     {
-        // Clear and rebuild the roster display
         ClearContainer(playerListContainer);
 
         foreach (CSPlayer player in players)
@@ -70,149 +399,68 @@ public class CSUIManager : MonoBehaviour
         }
     }
 
-    public void DisplayMatchResult(CSMatch match)
+    private void DisplayContractEntry(PlayerContract contract)
     {
-        // Show post-match analysis and statistics
-        matchDayPanel.SetActive(true);
+        GameObject item = Instantiate(itemPrefab, dataContainer);
+        Text[] texts = item.GetComponentsInChildren<Text>();
 
-        // Populate with match data
-        if (match.isCompleted)
+        if (texts.Length >= 4)
         {
-            // Show each map result
-            foreach (CSMapResult mapResult in match.mapResults)
-            {
-                DisplayMapResult(mapResult);
-            }
-
-            // Show match MVP
-            CSPlayer mvp = DetermineMVP(match);
-            DisplayMatchMVP(mvp);
-
-            // Show highlight clips
-            DisplayMatchHighlights(match);
+            texts[0].text = contract.player.playerName;
+            texts[1].text = "$" + contract.monthlySalary.ToString("N0") + "/mo";
+            texts[2].text = "Expires: " + contract.contractEnd.ToString("dd MMM yyyy");
+            texts[3].text = contract.IsExpiringSoon() ? "⚠ EXPIRING SOON" : "Active";
         }
     }
 
-    private void DisplayMapResult(CSMapResult mapResult)
+    private void DisplayTransferListing(TransferMarket.TransferListing listing)
     {
-        // Show map score and key stats
-        // Create a panel for this map result
-    }
+        GameObject item = Instantiate(itemPrefab, dataContainer);
+        Text[] texts = item.GetComponentsInChildren<Text>();
 
-    private CSPlayer DetermineMVP(CSMatch match)
-    {
-        // Determine match MVP based on stats
-        // Placeholder implementation - would calculate based on overall performance
-        return match.teamA.activeRoster[0];
-    }
-
-    private void DisplayMatchMVP(CSPlayer mvp)
-    {
-        // Show the MVP player and their stats
-    }
-
-    private void DisplayMatchHighlights(CSMatch match)
-    {
-        // Show key moments from the match
-        foreach (CSMapResult mapResult in match.mapResults)
+        if (texts.Length >= 4)
         {
-            foreach (HighlightMoment highlight in mapResult.highlights)
-            {
-                // Create UI for this highlight
-                CreateHighlightDisplay(highlight);
-            }
+            texts[0].text = listing.player.playerName;
+            texts[1].text = "From: " + listing.currentTeam.name;
+            texts[2].text = "Ask: $" + listing.askingPrice.ToString("N0");
+            texts[3].text = listing.GetDaysRemaining() + " days | " + listing.offers.Count + " offers";
         }
     }
 
-    private void CreateHighlightDisplay(HighlightMoment highlight)
+    private void DisplayPlayerStatsEntry(CSPlayer player, PlayerDevelopment.PlayerStats stats)
     {
-        // Create UI element for a highlight moment
-    }
+        GameObject item = Instantiate(itemPrefab, playerListContainer);
+        Text[] texts = item.GetComponentsInChildren<Text>();
 
-    public void ShowStrategyCreator(Map selectedMap)
-    {
-        // Open the strategy creation tool for a specific map
-        stratCreatorPanel.SetActive(true);
-
-        // Set up the map-specific elements
-        // e.g., Load minimap image, set up drag points for utility/positions
-        if (selectedMap != null && selectedMap.mapMinimap != null)
+        if (texts.Length >= 4)
         {
-            // Load the map minimap for strategy visualization
+            texts[0].text = player.playerName;
+            texts[1].text = $"Form: {stats.currentForm} | Morale: {stats.morale:F0}%";
+            texts[2].text = $"Rating: {stats.averageRating:F2} | KDA: {stats.careerKDA:F2}";
+            texts[3].text = $"Matches: {stats.totalMatches} | Experience: {stats.experience:F0}";
         }
     }
 
-    public void DisplayWorldRankings(List<RankedTeam> rankings)
+    private void CreateInfoPanel(string title, string content)
     {
-        // Show current world rankings
-        worldRankingsPanel.SetActive(true);
+        GameObject panel = Instantiate(itemPrefab, dataContainer);
+        Text[] texts = panel.GetComponentsInChildren<Text>();
 
-        // Create UI for each ranked team
-        foreach (RankedTeam rankedTeam in rankings)
+        if (texts.Length >= 2)
         {
-            CreateRankingEntry(rankedTeam);
+            texts[0].text = title;
+            texts[1].text = content;
         }
-    }
-
-    private void CreateRankingEntry(RankedTeam rankedTeam)
-    {
-        // Create a UI entry showing team rank, points, movement
-    }
-
-    public void ShowTournamentBracket(Tournament tournament)
-    {
-        // Display tournament structure (bracket or groups)
-        tournamentBracketPanel.SetActive(true);
-
-        if (tournament.format == TournamentFormat.SingleElimination ||
-            tournament.format == TournamentFormat.DoubleElimination)
-        {
-            CreateEliminationBracket(tournament);
-        }
-        else if (tournament.format == TournamentFormat.Swiss)
-        {
-            CreateSwissFormat(tournament);
-        }
-        else if (tournament.format == TournamentFormat.GroupsToPlayoffs)
-        {
-            CreateGroupStageDisplay(tournament);
-        }
-    }
-
-    private void CreateEliminationBracket(Tournament tournament)
-    {
-        // Create visual bracket for elimination tournaments
-    }
-
-    private void CreateSwissFormat(Tournament tournament)
-    {
-        // Create UI for Swiss system
-    }
-
-    private void CreateGroupStageDisplay(Tournament tournament)
-    {
-        // Create group tables and standings
-    }
-
-    public void SetupEventListeners()
-    {
-        continueButton.onClick.AddListener(() =>
-        {
-            CSTeamManager manager = UnityEngine.Object.FindFirstObjectByType<CSTeamManager>();
-            manager.AdvanceDay();
-            UpdateAllDisplays();
-        });
-
-        // Setup other UI event listeners
     }
 
     public void UpdateAllDisplays()
     {
-        CSTeamManager manager = UnityEngine.Object.FindFirstObjectByType<CSTeamManager>();
+        if (teamManager == null)
+            return;
 
         // Update date and basic info
-        currentDateText.text = manager.currentDate.ToString("dd MMM yyyy");
-        teamBudgetText.text = "$" + manager.budget.ToString("N0");
+        currentDateText.text = teamManager.currentDate.ToString("dd MMM yyyy");
+        teamBudgetText.text = "$" + teamManager.budget.ToString("N0");
 
         // Check for upcoming match
         CSMatch nextMatch = FindNextScheduledMatch();
@@ -226,23 +474,20 @@ public class CSUIManager : MonoBehaviour
         }
 
         // Update world ranking display
-        worldRankingText.text = "#" + manager.managedTeam.worldRanking;
-
-        // Update other displays
-        UpdateTeamRoster(manager.managedTeam.activeRoster);
+        worldRankingText.text = "#" + teamManager.managedTeam.worldRanking;
     }
 
     private CSMatch FindNextScheduledMatch()
     {
-        CSTeamManager manager = UnityEngine.Object.FindFirstObjectByType<CSTeamManager>();
+        if (teamManager == null)
+            return null;
 
-        // Find closest upcoming match date
         CSMatch nextMatch = null;
         DateTime closestDate = DateTime.MaxValue;
 
-        foreach (CSMatch match in manager.upcomingMatches)
+        foreach (CSMatch match in teamManager.upcomingMatches)
         {
-            if (match.scheduledDate > manager.currentDate && match.scheduledDate < closestDate)
+            if (match.scheduledDate > teamManager.currentDate && match.scheduledDate < closestDate)
             {
                 closestDate = match.scheduledDate;
                 nextMatch = match;
@@ -252,26 +497,66 @@ public class CSUIManager : MonoBehaviour
         return nextMatch;
     }
 
-    private void ClearContainer(Transform container)
+    // MATCH SIMULATION UI
+
+    public void DisplayMatchResult(MatchSimulationManager.MatchResult matchResult)
     {
-        foreach (Transform child in container)
+        matchSimulationPanel.SetActive(true);
+
+        matchTitleText.text = $"{matchResult.teamA.name} vs {matchResult.teamB.name}";
+        matchDateText.text = matchResult.matchDate.ToString("dd MMM yyyy HH:mm");
+        mapNameText.text = $"Map: {matchResult.map}";
+
+        teamANameText.text = matchResult.teamA.name;
+        teamBNameText.text = matchResult.teamB.name;
+        teamAScoreText.text = matchResult.scoreTeamA.ToString();
+        teamBScoreText.text = matchResult.scoreTeamB.ToString();
+    }
+
+    public void ShowStrategyCreator(Map selectedMap)
+    {
+        stratCreatorPanel.SetActive(true);
+
+        if (selectedMap != null && selectedMap.mapMinimap != null)
         {
-            Destroy(child.gameObject);
+            // Load the map minimap for strategy visualization
         }
     }
 
-    // Live match simulation UI
+    public void DisplayWorldRankings(List<RankedTeam> rankings)
+    {
+        worldRankingsPanel.SetActive(true);
+
+        foreach (RankedTeam rankedTeam in rankings)
+        {
+            CreateRankingEntry(rankedTeam);
+        }
+    }
+
+    private void CreateRankingEntry(RankedTeam rankedTeam)
+    {
+        // Create a UI entry showing team rank, points, movement
+    }
+
+    public void ShowTournamentBracket(SeasonManager.Tournament tournament)
+    {
+        tournamentBracketPanel.SetActive(true);
+
+        // Display tournament structure
+        CreateInfoPanel(tournament.tournamentName,
+            $"Status: {tournament.status}\n" +
+            $"Prize Pool: ${tournament.prizePool:N0}\n" +
+            $"Teams: {tournament.participatingTeams.Count}\n" +
+            $"Start: {tournament.startDate:dd MMM yyyy}\n" +
+            $"End: {tournament.endDate:dd MMM yyyy}");
+    }
+
     public void StartMatchSimulationView(CSMatch match)
     {
         matchSimulationPanel.SetActive(true);
 
-        // Set up the simulation view
         UpdateScoreDisplay(0, 0);
-
-        // Show the current map
         UpdateMinimapDisplay(match.mapsToPlay[0]);
-
-        // Show starting player positions
         ShowPlayerPositionsOnMap(match);
     }
 
@@ -282,8 +567,6 @@ public class CSUIManager : MonoBehaviour
 
     private void UpdateMinimapDisplay(Map map)
     {
-        // Set the minimap image to the current map
-        // This would need actual map minimap sprites
         if (map != null && map.mapMinimap != null)
         {
             minimapImage.sprite = map.mapMinimap;
@@ -297,20 +580,54 @@ public class CSUIManager : MonoBehaviour
 
     public void AddKillfeedEntry(CSPlayer killer, CSPlayer victim, string weaponUsed)
     {
-        // Add a kill to the killfeed UI
-        GameObject killfeedEntry = new("KillfeedEntry");
+        GameObject killfeedEntry = new GameObject("KillfeedEntry");
         killfeedEntry.transform.SetParent(killfeedPanel.transform, false);
 
-        // Create killfeed text element
         Text killfeedText = killfeedEntry.AddComponent<Text>();
         killfeedText.text = $"{killer.nickName} [{weaponUsed}] {victim.nickName}";
 
-        // Make entries fade out and move up
         Destroy(killfeedEntry, 5f);
+    }
+
+    private void AdvanceDay()
+    {
+        if (teamManager != null)
+        {
+            teamManager.AdvanceDay();
+            UpdateAllDisplays();
+            LoadPageData(currentPage); // Refresh current page
+        }
+    }
+
+    private void SaveGame()
+    {
+        if (seasonManager != null)
+        {
+            seasonManager.SaveGame();
+            Debug.Log("Game saved!");
+        }
+    }
+
+    private void LoadGame()
+    {
+        if (seasonManager != null)
+        {
+            seasonManager.LoadGame();
+            Debug.Log("Game loaded!");
+            ShowPage(UIPage.Dashboard);
+        }
+    }
+
+    private void ClearContainer(Transform container)
+    {
+        foreach (Transform child in container)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }
 
-// Specialized UI components
+// Specialized UI components (keeping your existing code)
 [System.Serializable]
 public class CSPlayerProfileUI : MonoBehaviour
 {
@@ -330,9 +647,9 @@ public class CSPlayerProfileUI : MonoBehaviour
 
     [Header("Performance Stats")]
     public Text ratingText;
-    public Text kprText; // Kills per round
-    public Text headspotText;
-    public Text adrText; // Average damage per round
+    public Text kprText;
+    public Text headshotText;
+    public Text adrText;
 
     public void PopulateProfile(CSPlayer player)
     {
@@ -347,17 +664,15 @@ public class CSPlayerProfileUI : MonoBehaviour
             playerImage.sprite = player.playerPhoto;
         }
 
-        // Set skill sliders
         aimSlider.value = player.aim / 20f;
         reactionTimeSlider.value = player.reactionTime / 20f;
         positioningSlider.value = player.positioning / 20f;
         utilityUsageSlider.value = player.utilityUsage / 20f;
         clutchSlider.value = player.clutchAbility / 20f;
 
-        // Set performance stats
         ratingText.text = player.averageHLTVRating.ToString("F2");
         kprText.text = player.killsPerRound.ToString("F2");
-        headspotText.text = player.headshotPercentage.ToString("F1") + "%";
+        headshotText.text = player.headshotPercentage.ToString("F1") + "%";
         adrText.text = player.averageDamagePerRound.ToString("F1");
     }
 }

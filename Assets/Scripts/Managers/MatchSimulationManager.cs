@@ -10,11 +10,11 @@ public class MatchSimulationManager : MonoBehaviour
     [System.Serializable]
     public class MatchResult
     {
-        public Team teamA;
-        public Team teamB;
+        public CSTeam teamA;
+        public CSTeam teamB;
         public int scoreTeamA;
         public int scoreTeamB;
-        public Team winner;
+        public CSTeam winner;
         public List<PlayerPerformance> playerPerformances;
         public string map;
         public int totalRounds;
@@ -41,7 +41,7 @@ public class MatchSimulationManager : MonoBehaviour
     public class RoundResult
     {
         public int roundNumber;
-        public Team winnerTeam;
+        public CSTeam winnerTeam;
         public int teamAScore;
         public int teamBScore;
         public string result; // "T Win", "CT Win", "Draw"
@@ -63,7 +63,7 @@ public class MatchSimulationManager : MonoBehaviour
     private float mapAdvantageA = 0f;
     private float mapAdvantageB = 0f;
 
-    public MatchResult SimulateMatch(Team teamA, Team teamB, string map, int maxRounds = 30)
+    public MatchResult SimulateMatch(CSTeam teamA, CSTeam teamB, string map, int maxRounds = 30)
     {
         MatchResult result = new()
         {
@@ -128,7 +128,7 @@ public class MatchSimulationManager : MonoBehaviour
         return result;
     }
 
-    private void CalculateMapAdvantages(Team teamA, Team teamB, string map)
+    private void CalculateMapAdvantages(CSTeam teamA, CSTeam teamB, string map)
     {
         // Analyze team performance on specific maps
         mapAdvantageA = 1.0f;
@@ -144,7 +144,7 @@ public class MatchSimulationManager : MonoBehaviour
         }
     }
 
-    private RoundResult SimulateRound(Team teamA, Team teamB, int roundNumber,
+    private RoundResult SimulateRound(CSTeam teamA, CSTeam teamB, int roundNumber,
         Dictionary<CSPlayer, PlayerPerformance> playerStats, string map)
     {
         RoundResult result = new()
@@ -158,8 +158,8 @@ public class MatchSimulationManager : MonoBehaviour
 
         // Determine round economy and side (T/CT)
         bool isTeamAT = (roundNumber < 15);
-        Team tSide = isTeamAT ? teamA : teamB;
-        Team ctSide = isTeamAT ? teamB : teamA;
+        CSTeam tSide = isTeamAT ? teamA : teamB;
+        CSTeam ctSide = isTeamAT ? teamB : teamA;
 
         List<CSPlayer> tPlayers = isTeamAT ? rosterA : rosterB;
         List<CSPlayer> ctPlayers = isTeamAT ? rosterB : rosterA;
@@ -287,19 +287,5 @@ public class MatchSimulationManager : MonoBehaviour
                                    performance.player.reflexes) / 3f;
 
         performance.ratingPerformance *= (playerSkillAverage / 100f);
-    }
-}
-
-/// <summary>
-/// Placeholder for Team class - implement based on your actual Team structure
-/// </summary>
-public class Team
-{
-    public string teamName;
-    public List<CSPlayer> roster;
-
-    public List<CSPlayer> GetActiveRoster()
-    {
-        return roster.Take(5).ToList(); // Get starting 5
     }
 }

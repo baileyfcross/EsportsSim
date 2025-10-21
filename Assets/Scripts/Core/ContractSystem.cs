@@ -11,7 +11,7 @@ public class ContractSystem : MonoBehaviour
     public class PlayerContract
     {
         public CSPlayer player;
-        public Team team;
+        public CSTeam team;
         public float monthlySalary;
         public DateTime contractStart;
         public DateTime contractEnd;
@@ -47,7 +47,7 @@ public class ContractSystem : MonoBehaviour
     [System.Serializable]
     public class TeamBudget
     {
-        public Team team;
+        public CSTeam team;
         public float totalBudget;
         public float spentOnSalaries;
         public float spentOnBonuses;
@@ -74,12 +74,12 @@ public class ContractSystem : MonoBehaviour
     public enum ClauseType { Buyout, ReleaseClause, ChampionshipBonus, PerformanceBonus, LoyaltyBonus }
     public enum TransactionType { Salary, Bonus, Income, Expense, PrizeMoney }
 
-    private Dictionary<Team, TeamBudget> teamBudgets = new();
+    private Dictionary<CSTeam, TeamBudget> teamBudgets = new();
     private Dictionary<CSPlayer, PlayerContract> playerContracts = new();
 
     private float monthlyExpenses = 0f;
 
-    public void InitializeBudget(Team team, float initialBudget)
+    public void InitializeBudget(CSTeam team, float initialBudget)
     {
         if (!teamBudgets.ContainsKey(team))
         {
@@ -96,7 +96,7 @@ public class ContractSystem : MonoBehaviour
         }
     }
 
-    public bool SignContract(CSPlayer player, Team team, float monthlySalary,
+    public bool SignContract(CSPlayer player, CSTeam team, float monthlySalary,
         float signingBonus, int contractMonths)
     {
         TeamBudget budget = teamBudgets[team];
@@ -105,7 +105,7 @@ public class ContractSystem : MonoBehaviour
         float totalCost = (monthlySalary * contractMonths) + signingBonus;
         if (budget.GetAvailableBudget() < totalCost)
         {
-            Debug.LogWarning($"Team {team.teamName} cannot afford contract for {player.playerName}");
+            Debug.LogWarning($"Team {team.name} cannot afford contract for {player.playerName}");
             return false;
         }
 
@@ -136,7 +136,7 @@ public class ContractSystem : MonoBehaviour
 
         AddTransaction(team, $"Signed {player.playerName}", signingBonus, TransactionType.Expense);
 
-        Debug.Log($"Contract signed: {player.playerName} with {team.teamName}");
+        Debug.Log($"Contract signed: {player.playerName} with {team.name}");
         return true;
     }
 
@@ -156,7 +156,7 @@ public class ContractSystem : MonoBehaviour
             {
                 CSPlayer player = kvp.Key;
                 PlayerContract contract = kvp.Value;
-                Team team = contract.team;
+                CSTeam team = contract.team;
 
                 if (teamBudgets.ContainsKey(team))
                 {
@@ -197,7 +197,7 @@ public class ContractSystem : MonoBehaviour
             terminationCost, TransactionType.Expense);
     }
 
-    public void AddPrizeMoneyIncome(Team team, float amount)
+    public void AddPrizeMoneyIncome(CSTeam team, float amount)
     {
         if (!teamBudgets.ContainsKey(team))
             return;
@@ -207,7 +207,7 @@ public class ContractSystem : MonoBehaviour
         AddTransaction(team, "Prize money earned", amount, TransactionType.PrizeMoney);
     }
 
-    public void AddSponsorshipIncome(Team team, float amount)
+    public void AddSponsorshipIncome(CSTeam team, float amount)
     {
         if (!teamBudgets.ContainsKey(team))
             return;
@@ -217,7 +217,7 @@ public class ContractSystem : MonoBehaviour
         AddTransaction(team, "Sponsorship income", amount, TransactionType.Income);
     }
 
-    public float GetTeamAvailableBudget(Team team)
+    public float GetTeamAvailableBudget(CSTeam team)
     {
         return teamBudgets.ContainsKey(team) ? teamBudgets[team].GetAvailableBudget() : 0f;
     }
@@ -227,12 +227,12 @@ public class ContractSystem : MonoBehaviour
         return playerContracts.ContainsKey(player) ? playerContracts[player] : null;
     }
 
-    public TeamBudget GetTeamBudget(Team team)
+    public TeamBudget GetTeamBudget(CSTeam team)
     {
         return teamBudgets.ContainsKey(team) ? teamBudgets[team] : null;
     }
 
-    public List<PlayerContract> GetTeamContracts(Team team)
+    public List<PlayerContract> GetTeamContracts(CSTeam team)
     {
         List<PlayerContract> contracts = new();
         foreach (var kvp in playerContracts)
@@ -245,7 +245,7 @@ public class ContractSystem : MonoBehaviour
         return contracts;
     }
 
-    private void AddTransaction(Team team, string description, float amount, TransactionType type)
+    private void AddTransaction(CSTeam team, string description, float amount, TransactionType type)
     {
         if (teamBudgets.ContainsKey(team))
         {
